@@ -1,0 +1,9 @@
+pytz
+numpy
+pandas
+tensorflow
+keras
+fastapi
+uvicorn
+scikit-learn
+pickle

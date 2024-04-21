@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Title Classification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: rgb(212, 215, 217);
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 98%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+        }
+
+        .label-section {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>News Title Classification Demo</h2>
+        <div class="input-section">
+            <label for="textInput">Input Text:</label>
+            <input type="text" id="textInput" placeholder="Enter text to classify">
+            <button onclick="classifyText()">Classify</button>
+            <button onclick="clearInput()">Clear</button>
+            <div class="result" id="resultContainer" style="display: none;">
+                <h3>Classification Result:</h3>
+                <p><strong>Input Text:</strong> <span id="inputText"></span></p>
+                <p><strong>Predicted Label:</strong> <span id="predictedLabel"></span></p>
+                <p><strong>Confidence Score:</strong> <span id="confidenceScore"></span></p>
+            </div>
+        </div>
+
+        <div class="label-section">
+            <button onclick="getLabels()">List Labels</button>
+            <div id="labelsContainer" style="display: none;">
+                <h3>Available Labels:</h3>
+                <ul id="labelsList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function classifyText() {
+            var inputText = document.getElementById("textInput").value.trim();
+            if (inputText === "") {
+                alert("Please enter text to classify.");
+                return;
+            }
+
+            var url = "http://localhost:2005/classify?text=" + encodeURIComponent(inputText);
+
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("inputText").textContent = inputText;
+                    document.getElementById("predictedLabel").textContent = data.predicted_label;
+                    document.getElementById("confidenceScore").textContent = data.prob;
+                    document.getElementById("resultContainer").style.display = "block";
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("An error occurred. Please try again later.");
+                });
+        }
+
+        function getLabels() {
+            var url = "http://localhost:2005/list_label";
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    var labelsList = document.getElementById("labelsList");
+                    labelsList.innerHTML = "";
+                    data.labels.forEach(label => {
+                        var listItem = document.createElement("li");
+                        listItem.textContent = label;
+                        labelsList.appendChild(listItem);
+                    });
+                    document.getElementById("labelsContainer").style.display = "block";
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("An error occurred. Please try again later.");
+                });
+        }
+
+        function clearInput() {
+            document.getElementById("textInput").value = "";
+            clearResult();
+        }
+
+        function clearResult() {
+            document.getElementById("inputText").textContent = "";
+            document.getElementById("predictedLabel").textContent = "";
+            document.getElementById("confidenceScore").textContent = "";
+            document.getElementById("resultContainer").style.display = "none";
+        }
+    </script>
+</body>
+
+</html>
